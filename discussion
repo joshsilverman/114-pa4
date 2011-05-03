@@ -1,0 +1,28 @@
+kitchen sink
+
+pos precision: 0.595238095238
+pos recall: 0.881057268722
+pos precision: 0.926426426426
+pos recall: 0.701136363636
+pos precision: 0.768292682927
+pos recall: 0.914700544465
+
+no prev/next token
+
+pos precision: 0.575842696629
+pos recall: 0.903083700441
+pos precision: 0.931297709924
+pos recall: 0.693181818182
+pos precision: 0.785162287481
+pos recall: 0.921960072595
+
+no prev/next token, no NP info
+
+pos precision: 0.632653061224
+pos recall: 0.68281938326
+pos precision: 0.84
+pos recall: 0.835227272727
+pos precision: 0.843866171004
+pos recall: 0.823956442831
+
+token, pos, np, prev_token
