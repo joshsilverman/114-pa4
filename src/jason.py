@@ -44,11 +44,11 @@ def get_SNP_suffix_2(sent, i):
 def get_features(word, sent, i):
     features = {}
     features['Current Word'] = word[0]
-    features['POS'] = word[1]
+#    features['POS'] = word[1]
     features['NP Tag'] = word[2]
     features['Previous Word'] = get_previous_word(sent, i)
-    features['SNP Suffix (-1)'] = get_SNP_suffix_1(sent, i)
-    features['SNP Suffix (-2)'] = get_SNP_suffix_2(sent, i)
+#    features['SNP Suffix (-1)'] = get_SNP_suffix_1(sent, i)
+#    features['SNP Suffix (-2)'] = get_SNP_suffix_2(sent, i)
     return features
 
 def get_featureset(data, featureset = []):
@@ -68,14 +68,20 @@ def get_results(classifier, ref_results = collections.defaultdict(set),
 training_featureset = get_featureset(training_set)
 test_featureset = get_featureset(test_set)
 
+import pprint, sys
+pprint.pprint(training_featureset[10])
+pprint.pprint(test_featureset[10])
+sys.exit()
+
 bayes_classifier = nltk.NaiveBayesClassifier.train(training_featureset)
 results = get_results(bayes_classifier)
 
-import pprint
-pprint.pprint(training_featureset)
-pprint.pprint(results)
+#from pprint import pprint
+##pprint.pprint(training_featureset)
+##pprint.pprint(results)
+#pprint(results)
 import sys
-sys.exit()
+#sys.exit()
 
 print '''
 Classifier accuracy (Bayes): %s
@@ -95,7 +101,9 @@ O Recall (Bayes): %s
 
 #bayes_classifier.show_most_informative_features(10)
 
-maxent_classifier = nltk.MaxentClassifier.train(training_featureset)
+sys.exit()
+
+maxent_classifier = nltk.classify.MaxentClassifier.train(training_featureset)
 maxent_results = get_results(maxent_classifier)
 
 print '''

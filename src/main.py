@@ -4,6 +4,7 @@ from nltk.tokenize import RegexpTokenizer
 from nltk import NaiveBayesClassifier
 from nltk.classify import MaxentClassifier
 from nltk.metrics import *
+from pprint import pprint
 
 training_ids \
     = [1,2,6,7,9,13,14,27,55,67,70,74,76,80,81,84,96,115,131,147,153,154]
@@ -47,79 +48,56 @@ def aug_features(tupl, prev_tupl, next_tupl, pprev_tupl, nnext_tupl):
     iob_list += [next_tupl[0]] if next_tupl else [""]
     iob_list += [pprev_tupl[1]] if pprev_tupl else [""]  
     iob_list += [nnext_tupl[1]] if nnext_tupl else [""]
-    
     return tuple(iob_list)
 
-def tupls2classifier_format(tupls):
+def tupls2classifier_format(tupls, is_test = False):
     classifier_format = []
-    features = []
     for tupl in tupls:
-        featureVector = {}
-        featureVector["token_" + tupl[0]] = 1
-        featureVector["pos_" + tupl[1]] = 1
-#        featureVector["np_" + tupl[2]] = 1
-#        featureVector["prev_pos_" + tupl[4]] = 1
-#        featureVector["next_pos_" + tupl[5]] = 1
-        featureVector["prev_token_" + tupl[6]] = 1
-        featureVector["next_token_" + tupl[7]] = 1
-#        featureVector["pprev_pos_" + tupl[8]] = 1
-#        featureVector["nnext_pos_" + tupl[9]] = 1
-        features += ["token_" + tupl[0],
-                     "pos_" + tupl[1], "np_" + tupl[2], 
-#                     "prev_pos_" + tupl[4], "next_pos_" + tupl[5],
-                     "prev_token_" + tupl[6],#, "next_token_" + tupl[7],
-#                     "pprev_token_" + tupl[8], "nnext_token_" + tupl[9]
-                     ]
-        classifier_format.append((featureVector, tupl[3],))
-    features = set(features)
-    features = dict(zip(features, [0]*len(features)))
-    for i, f in enumerate(classifier_format):
-        features_tmp = features.copy()
-        features_tmp.update(classifier_format[i][0])
-        classifier_format[i] = (features_tmp,classifier_format[i][1],)
-    return classifier_format, features
-
-def collect_pos(gen):
-    features = set([tupl[1] for tupl in gen])
-    return features
-
-def collect_np(iob_tuples):
-    features = set([tupl[2] for tupl in iob_tuples])
-    return features
-
-def getNaiveBayesClassifier(iobTuples):
-    training, features = tupls2classifier_format(iobTuples)
-    print len(features)
-    print len(training)
-    return NaiveBayesClassifier.train(training)
-#    return MaxentClassifier.train(training)
+        features = ["tok", "pos", "np", "prev_pos", "next_pos", "prev_tok",\
+                    "next_tok", "pprev_pos", "nnext_pos"]
+        values = tupl[0:3] + tupl[4:6]
+        feature_vector = dict(zip(features, values))
+        if is_test:
+            classifier_format.append(feature_vector)
+        else:
+            classifier_format.append((feature_vector, tupl[3],))
+    return classifier_format
 
 def classify(classifier, test, labels):
     test_results = dict(zip(labels, [set(), set(), set()]))
-    for i, featureVector in enumerate(test):
-        test_class = classifier.classify(featureVector)
+    for i, feature_vector in enumerate(test):
+        test_class = classifier.classify(feature_vector)
         test_results[test_class].add(i)
     return test_results
 
-def get_iob_tuples(training_ids, test_ids):
-    iob_tuples = ids2iob_tupls(training_ids)
-    test_tuples = ids2iob_tupls(test_ids)
-    return (iob_tuples, test_tuples)
+def get_iob_tupls(training_ids, test_ids):
+    iob_tupls = ids2iob_tupls(training_ids)
+    test_tupls = ids2iob_tupls(test_ids)
+    return (iob_tupls, test_tupls)
 
-(iob_tuples, test_tuples) = get_iob_tuples(training_ids, test_ids)
-classifer_format, features = tupls2classifier_format(test_tuples)
-test = [featureVector for (featureVector, label) in classifer_format]
-classifier = getNaiveBayesClassifier(iob_tuples)
-#labels = ["B-SNP", "I-SNP", "O"]
+iob_tupls, test_tupls = get_iob_tupls(training_ids, test_ids)
+classifer_format_test = tupls2classifier_format(test_tupls, True)
+classifer_format_training = tupls2classifier_format(iob_tupls)
 
-#test_results = classify(classifier, test, labels)
-#test_goldstd = dict(zip(labels, [set(), set(), set()]))
-#for i, iobTuple in enumerate(ids2iob_tupls(test_ids)):
-#    test_goldstd[iobTuple[3]].add(i)
-#
-#print 'pos precision:', precision(test_goldstd["B-SNP"], test_results['B-SNP'])
-#print 'pos recall:', recall(test_goldstd["B-SNP"], test_results['B-SNP'])
-#print 'pos precision:', precision(test_goldstd["I-SNP"], test_results['I-SNP'])
-#print 'pos recall:', recall(test_goldstd["I-SNP"], test_results['I-SNP'])
-#print 'pos precision:', precision(test_goldstd["O"], test_results['O'])
-#print 'pos recall:', recall(test_goldstd["O"], test_results['O'])
+classifiers = {}
+classifiers['bayes'] = NaiveBayesClassifier.train(classifer_format_training)
+classifiers['maxent'] = MaxentClassifier.train(classifer_format_training)
+
+labels = ["B-SNP", "I-SNP", "O"]
+test_goldstd = dict(zip(labels, [set(), set(), set()]))
+for i, iob_tupl in enumerate(ids2iob_tupls(test_ids)):
+    test_goldstd[iob_tupl[3]].add(i)
+for clsf_type, classifier in classifiers.iteritems():
+    test_results = classify(classifier, classifer_format_test, labels)
+    print 'B precision (%s):' % clsf_type, precision(test_goldstd["B-SNP"], 
+                                                     test_results['B-SNP'])
+    print 'B recall (%s):' % clsf_type, recall(test_goldstd["B-SNP"], 
+                                               test_results['B-SNP'])
+    print 'I precision (%s):' % clsf_type, precision(test_goldstd["I-SNP"], 
+                                                     test_results['I-SNP'])
+    print 'I recall (%s):' % clsf_type, recall(test_goldstd["I-SNP"], 
+                                               test_results['I-SNP'])
+    print 'O precision (%s):' % clsf_type, precision(test_goldstd["O"], 
+                                                     test_results['O'])
+    print 'O recall (%s):' % clsf_type, recall(test_goldstd["O"], 
+                                               test_results['O'])

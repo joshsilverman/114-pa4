@@ -26,3 +26,61 @@ pos precision: 0.843866171004
 pos recall: 0.823956442831
 
 token, pos, np, prev_token
+
+pos precision: 0.577702702703
+pos recall: 0.753303964758
+pos precision: 0.868387096774
+pos recall: 0.764772727273
+pos precision: 0.814310051107
+pos recall: 0.867513611615
+
+token, previous, np, pos
+
+pos precision: 0.611620795107
+pos recall: 0.881057268722
+pos precision: 0.917767988253
+pos recall: 0.710227272727
+pos precision: 0.775384615385
+pos recall: 0.914700544465
+
+token, previous, np
+
+pos precision: 0.614457831325
+pos recall: 0.898678414097
+pos precision: 0.922302158273
+pos recall: 0.728409090909
+pos precision: 0.771790808241
+pos recall: 0.883847549909
+
+
+jason
+
+Classifier accuracy (Bayes): 0.844957861087
+B Precision (Bayes): 0.671052631579
+B Recall (Bayes): 0.956953642384
+I Precision (Bayes): 0.985315186246
+I Recall (Bayes): 0.738920225624
+O Precision (Bayes): 0.785203716941
+O Recall (Bayes): 0.975144252108
+
+
+({'np': 'B-NP', 'prev_token': '', 'token': 'Pierre'}, 'B-SNP')
+({'np': 'B-NP', 'prev_token': '', 'token': 'F.H.'}, 'B-SNP')
+
+({'Current Word': 'Pierre', 'NP Tag': 'B-NP', 'Previous Word': '<START>'},
+ 'B-SNP')
+({'Current Word': 'Pierre', 'NP Tag': 'B-NP', 'Previous Word': '<START>'},
+ 'B-SNP')
+
+
+
+
+({'np': 'O', 'prev_pos_NNS': 1, 'prev_token': 'years', 'token': 'old'},
+ 'I-SNP')
+({'np': 'B-NP', 'prev_pos_,': 1, 'prev_token': ',', 'token': 'an'}, 'I-SNP')
+
+Discussion Topics
+
+Maxent vs. Naive Bayes
+Feature Selection
+B - Unnecessary
